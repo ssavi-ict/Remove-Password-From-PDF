@@ -5,9 +5,6 @@ from progress.bar import Bar
 
 
 class PasswordRemover:
-    pdf_path = None
-    pdf_pass = None
-
     def __init__(self) -> None:
         self.pdf_path = None
         self.pdf_pass = None
@@ -24,8 +21,11 @@ class PasswordRemover:
 
     @staticmethod
     def decrypt_pdf(my_pdf_location, my_pdf_password, my_save_location):
-        my_pdf = pikepdf.open(my_pdf_location, password=my_pdf_password)
-        my_pdf.save(my_save_location)
+        try:
+            my_pdf = pikepdf.open(my_pdf_location, password=my_pdf_password)
+            my_pdf.save(my_save_location)
+        except pikepdf._qpdf.PasswordError as e:
+            print("Wrong Password Given.")
 
     def decrypt_a_single_pdf(self, pdf_location, pdf_password):
         original_file_directory = os.path.dirname(pdf_location)
