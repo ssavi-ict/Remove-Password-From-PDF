@@ -3,6 +3,7 @@ import os
 import shutil
 from progress.bar import Bar
 
+
 class PasswordRemover:
     pdf_path = None
     pdf_pass = None
@@ -10,7 +11,7 @@ class PasswordRemover:
     def __init__(self) -> None:
         self.pdf_path = None
         self.pdf_pass = None
-    
+
     @staticmethod
     def decision_from_user_about_directory():
         print("\nDo you want to decrypt a single PDF file ?")
@@ -25,7 +26,7 @@ class PasswordRemover:
     def decrypt_pdf(my_pdf_location, my_pdf_password, my_save_location):
         my_pdf = pikepdf.open(my_pdf_location, password=my_pdf_password)
         my_pdf.save(my_save_location)
-    
+
     def decrypt_a_single_pdf(self, pdf_location, pdf_password):
         original_file_directory = os.path.dirname(pdf_location)
         original_file_name = os.path.basename(pdf_location)
@@ -37,7 +38,7 @@ class PasswordRemover:
 
         save_location = os.path.join(decrypted_directory, original_file_name)
         PasswordRemover.decrypt_pdf(pdf_location, pdf_password, save_location)
-    
+
     def decrypt_multiple_pdfs_in_a_directory(self, pdf_location, pdf_password):
         decrypted_directory = os.path.join(pdf_location, 'decrypted')
         if os.path.exists(decrypted_directory):
@@ -59,10 +60,9 @@ class PasswordRemover:
 
         if user_choice == '2':
             self.decrypt_multiple_pdfs_in_a_directory(pdf_location=pdf_location, pdf_password=pdf_password)
-        
+
         print("Done Decrypting PDF(s)")
 
-        
     def decrypt_my_pdf(self):
         user_choice = PasswordRemover.decision_from_user_about_directory()
         if user_choice != '1' and user_choice != '2':
@@ -70,12 +70,13 @@ class PasswordRemover:
                 print('Wrong Input Given.')
             print("Halting the Process..... ")
             return
-        
+
         if user_choice == '1':
             self.pdf_path = input('Insert the PDF Path: ')
-            
+
         if user_choice == '2':
-            self.pdf_path = input('Insert the PDF Directory. Press ENTER if you want to decrypt PDFs of current directory : ')
+            self.pdf_path = input(
+                'Insert the PDF Directory. Press ENTER if you want to decrypt PDFs of current directory : ')
             if not self.pdf_path:
                 self.pdf_path = os.getcwd()
 
@@ -86,4 +87,3 @@ class PasswordRemover:
 if __name__ == "__main__":
     p_remover = PasswordRemover()
     p_remover.decrypt_my_pdf()
-
