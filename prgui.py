@@ -65,7 +65,7 @@ class PasswordRemoverGUI:
             [sg.Button('NEXT'), sg.Button('CANCEL')]
             ]
 
-        users_choice = 99
+        users_choice = '99'
         pdf_path = None
         pdf_password = None
 
@@ -75,11 +75,11 @@ class PasswordRemoverGUI:
             if values['one_pdf']:
                 # print(values['one_pdf'])
                 pdf_path = self.select_a_pdf_file()
-                users_choice = 1
+                users_choice = '1'
                 # print(users_choice, pdf_path)
             elif values['all_pdf']:
                 print('All PDF', values['all_pdf'])
-                users_choice = 2
+                users_choice = '2'
                 pdf_path = self.select_a_directory()
                 # print(users_choice, pdf_path)
             window.close()
@@ -93,9 +93,15 @@ class PasswordRemoverGUI:
 
     def decrypt_pdf_gui(self):
         user_choice, pdf_path, pdf_password = self.choose_from_option()
-        print(pdf_path, pdf_password)
+        # print(pdf_path, pdf_password)
         if pdf_path and pdf_password:
-            pass
+            pr_instance = pr()
+            if pr_instance.decrypt_pdf_and_save_into_a_directory(user_choice=user_choice, pdf_location=pdf_path, pdf_password=pdf_password) is True :
+                sg.popup_auto_close("PDF decryption successful", auto_close_duration=2)
+            else:
+                sg.popup_auto_close("All/Some PDF has some issues in decrypting.", auto_close_duration=2)
+        else:
+            print("Either PDF path and/or PDF password is not given.")
 
 
 if __name__ == "__main__":

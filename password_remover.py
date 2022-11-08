@@ -21,11 +21,18 @@ class PasswordRemover:
 
     @staticmethod
     def decrypt_pdf(my_pdf_location, my_pdf_password, my_save_location):
+        exception = None
         try:
             my_pdf = pikepdf.open(my_pdf_location, password=my_pdf_password)
             my_pdf.save(my_save_location)
-        except pikepdf._qpdf.PasswordError as e:
-            print("Wrong Password Given.")
+            print("Current PDF decrypted and saved to " + my_save_location)
+        except pikepdf._qpdf.PasswordError as error:
+            exception = error
+            print("Wrong password given.")
+        except pikepdf._qpdf.PdfError as damage:
+            exception = damage
+            print("This PDF is damaged.")
+        return exception
 
     def decrypt_a_single_pdf(self, pdf_location, pdf_password):
         original_file_directory = os.path.dirname(pdf_location)
@@ -37,7 +44,7 @@ class PasswordRemover:
         os.mkdir(decrypted_directory)
 
         save_location = os.path.join(decrypted_directory, original_file_name)
-        PasswordRemover.decrypt_pdf(pdf_location, pdf_password, save_location)
+        return PasswordRemover.decrypt_pdf(pdf_location, pdf_password, save_location)
 
     def decrypt_multiple_pdfs_in_a_directory(self, pdf_location, pdf_password):
         decrypted_directory = os.path.join(pdf_location, 'decrypted')
@@ -45,23 +52,32 @@ class PasswordRemover:
             shutil.rmtree(decrypted_directory, ignore_errors=True)
         os.mkdir(decrypted_directory)
 
+        any_exception = None
         all_pdfs = os.listdir(pdf_location)
         with Bar('Processing', max=len(all_pdfs), fill='*', suffix='%(percent)d%%') as bar:
             for file in all_pdfs:
                 if file.endswith(".pdf"):
                     file_location = os.path.join(pdf_location, file)
                     save_location = os.path.join(decrypted_directory, file)
-                    PasswordRemover.decrypt_pdf(file_location, pdf_password, save_location)
+                    returned_status = PasswordRemover.decrypt_pdf(file_location, pdf_password, save_location)
+                    if returned_status is not None:
+                        any_exception = returned_status
                     bar.next()
 
+        return any_exception
+
     def decrypt_pdf_and_save_into_a_directory(self, user_choice, pdf_location, pdf_password):
+        got_any_exception = None
         if user_choice == '1':
-            self.decrypt_a_single_pdf(pdf_location=pdf_location, pdf_password=pdf_password)
-
+            got_any_exception = self.decrypt_a_single_pdf(pdf_location=pdf_location, pdf_password=pdf_password)
         if user_choice == '2':
-            self.decrypt_multiple_pdfs_in_a_directory(pdf_location=pdf_location, pdf_password=pdf_password)
+            got_any_exception = self.decrypt_multiple_pdfs_in_a_directory(pdf_location=pdf_location, pdf_password=pdf_password)
 
-        print("Done Decrypting PDF(s)")
+        if got_any_exception is None:
+            print("Done Decrypting PDF(s)")
+        else:
+            print("There are some issues with PDF")
+        return got_any_exception is None
 
     def decrypt_my_pdf(self):
         user_choice = PasswordRemover.decision_from_user_about_directory()
