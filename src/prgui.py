@@ -42,9 +42,13 @@ class PasswordRemoverGUI:
         password_layout = [
             [sg.Text('Enter correct PDF password to decrypt')],
             [sg.Text('Password', size=(15, 1)), sg.InputText(key='-password-', password_char='*')],
+            [sg.Checkbox('Remember Password ?',
+                         key='save_pass', default=True,
+                         tooltip="By ticking on Remember Password, system will not ask you for password for this PDF in future.")
+            ],
             [sg.Button('SUBMIT')]
         ]
-        window = sg.Window('Choose a directory', password_layout, size=(700, 150))
+        window = sg.Window('Enter Password', password_layout, size=(700, 150))
 
         pdf_pass = None
         event, values = window.read()
@@ -69,7 +73,7 @@ class PasswordRemoverGUI:
         pdf_path = None
         pdf_password = None
 
-        window = sg.Window('Choose your option', choice_box, resizable=True, size=(600, 300))
+        window = sg.Window('Choose your option', choice_box, resizable=True, size=(700, 150))
         event, values = window.read()
         if event == 'NEXT':
             if values['one_pdf']:
