@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-from password_remover import PasswordRemover as pr
+from src.password_remover import PasswordRemover as pr
 
 
 class PasswordRemoverGUI:
@@ -69,7 +69,7 @@ class PasswordRemoverGUI:
         pdf_path = None
         pdf_password = None
 
-        window = sg.Window('Choose your option', choice_box, resizable=True, size=(600, 150))
+        window = sg.Window('Choose your option', choice_box, resizable=True, size=(600, 300))
         event, values = window.read()
         if event == 'NEXT':
             if values['one_pdf']:
@@ -84,7 +84,7 @@ class PasswordRemoverGUI:
                 # print(users_choice, pdf_path)
             window.close()
         else:
-            sg.popup_auto_close("CANCEL or [X] Button Clicked", auto_close_duration=1)
+            sg.popup_auto_close("CANCEL or [X] Button Clicked", auto_close_duration=5)
 
         if pdf_path:
             pdf_password = self.ask_for_password()
@@ -97,9 +97,9 @@ class PasswordRemoverGUI:
         if pdf_path and pdf_password:
             pr_instance = pr()
             if pr_instance.decrypt_pdf_and_save_into_a_directory(user_choice=user_choice, pdf_location=pdf_path, pdf_password=pdf_password) is True :
-                sg.popup_auto_close("PDF decryption successful", auto_close_duration=2)
+                sg.popup_auto_close("PDF decryption successful", auto_close_duration=5)
             else:
-                sg.popup_auto_close("All/Some PDF has some issues in decrypting.", auto_close_duration=2)
+                sg.popup_auto_close("All/Some PDF has some issues in decrypting.", auto_close_duration=5)
         else:
             print("Either PDF path and/or PDF password is not given.")
 
