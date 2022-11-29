@@ -76,7 +76,7 @@ class PasswordRemover:
         if got_any_exception is None:
             print("Done Decrypting PDF(s)")
         else:
-            print("There are some issues with PDF")
+            print("There are some issues with decrypting PDF(s)")
         return got_any_exception is None
 
     def decrypt_my_pdf(self):
