@@ -1,9 +1,11 @@
 import PySimpleGUI as sg
 from src.password_remover import PasswordRemover as pr
+from src.password import PasswordAction
 
 
 class PasswordRemoverGUI:
     def __int__(self):
+        # self.pw_action = PasswordAction()
         pass
 
     def select_a_pdf_file(self):
@@ -32,15 +34,15 @@ class PasswordRemoverGUI:
         event, values = window.read()
         # print(values["-IN2-"])
         if event == sg.WIN_CLOSED or event == "Exit":
-            sg.popup_auto_close("No Directory Selected", auto_close_duration=1)
+            sg.popup_auto_close("No Directory Selected", auto_close_duration=5)
         elif event == "SUBMIT":
             pdf_path = values["-IN-"]
         window.close()
         return pdf_path
 
-    def ask_for_password(self):
+    def ask_for_password(self, additional_message):
         password_layout = [
-            [sg.Text('Enter correct PDF password to decrypt')],
+            [sg.Text(additional_message + 'Please enter correct PDF password to decrypt')],
             [sg.Text('Password', size=(15, 1)), sg.InputText(key='-password-', password_char='*')],
             [sg.Checkbox('Remember Password ?',
                          key='save_pass', default=True,
@@ -51,27 +53,28 @@ class PasswordRemoverGUI:
         window = sg.Window('Enter Password', password_layout, size=(700, 150))
 
         pdf_pass = None
+        remember_password = None
         event, values = window.read()
         # print(values["-IN2-"])
         if event == sg.WIN_CLOSED or event == "Exit":
-            sg.popup_auto_close("No Password Given", auto_close_duration=1)
+            sg.popup_auto_close("No Password Given", auto_close_duration=5)
         elif event == "SUBMIT":
             pdf_pass = values["-password-"]
+            remember_password = values["save_pass"]
         window.close()
-        return pdf_pass
+        return pdf_pass, remember_password
 
-    def choose_from_option(self):
+    def get_the_pdf_path(self):
         sg.theme("DarkTeal2")
         choice_box = [
             [sg.Text('Do you want to decrypt - ', justification='left')],
             [sg.Radio(text='Only one PDF', group_id='type_dec', key='one_pdf', default=True),
              sg.Radio(text='All PDF in a directory', group_id='type_dec', key='all_pdf')],
             [sg.Button('NEXT'), sg.Button('CANCEL')]
-            ]
+        ]
 
         users_choice = '99'
         pdf_path = None
-        pdf_password = None
 
         window = sg.Window('Choose your option', choice_box, resizable=True, size=(700, 150))
         event, values = window.read()
@@ -89,10 +92,31 @@ class PasswordRemoverGUI:
             window.close()
         else:
             sg.popup_auto_close("CANCEL or [X] Button Clicked", auto_close_duration=5)
+        return users_choice, pdf_path
 
+    def get_the_pdf_password(self, pdf_path):
+        pw_action = PasswordAction()
+        pdf_password = None
+        remember_password = None
         if pdf_path:
-            pdf_password = self.ask_for_password()
+            pass_found, current_password = pw_action.password_exist_for_this_pdf(pdf_path=pdf_path)
+            if pass_found:
+                pdf_password = current_password
+                if not pr().validate_pdf_password(pdf_path=pdf_path, pdf_password=pdf_password):
+                    pdf_password, remember_password = self.ask_for_password(
+                        additional_message="Found an already used password for this PDF. "
+                                           "Although the saved password is incorrect.\n"
+                    )
+            else:
+                pdf_password, remember_password = self.ask_for_password(additional_message="")
 
+        if remember_password:
+            pw_action.save_password_for_this_pdf(pdf_path=pdf_path, password=pdf_password, pass_found=False)
+        return pdf_password
+
+    def choose_from_option(self):
+        users_choice, pdf_path = self.get_the_pdf_path()
+        pdf_password = self.get_the_pdf_password(pdf_path=pdf_path)
         return users_choice, pdf_path, pdf_password
 
     def decrypt_pdf_gui(self):
