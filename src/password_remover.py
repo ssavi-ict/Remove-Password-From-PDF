@@ -34,6 +34,17 @@ class PasswordRemover:
             print("This PDF is damaged.")
         return exception
 
+    def validate_pdf_password(self, pdf_path, pdf_password):
+        if pdf_path is None or pdf_password is None:
+            return False
+
+        try:
+            with pikepdf.open(pdf_path, password=pdf_password) as p:
+                is_valid = True
+        except pikepdf._qpdf.PasswordError as e:
+            is_valid = False
+        return is_valid
+
     def decrypt_a_single_pdf(self, pdf_location, pdf_password):
         original_file_directory = os.path.dirname(pdf_location)
         original_file_name = os.path.basename(pdf_location)
@@ -43,7 +54,7 @@ class PasswordRemover:
             shutil.rmtree(decrypted_directory, ignore_errors=True)
         os.mkdir(decrypted_directory)
 
-        save_location = os.path.join(decrypted_directory, original_file_name)
+        save_location = os.path.join(decrypted_directory, "decrypted_"+original_file_name)
         return PasswordRemover.decrypt_pdf(pdf_location, pdf_password, save_location)
 
     def decrypt_multiple_pdfs_in_a_directory(self, pdf_location, pdf_password):
@@ -71,7 +82,8 @@ class PasswordRemover:
         if user_choice == '1':
             got_any_exception = self.decrypt_a_single_pdf(pdf_location=pdf_location, pdf_password=pdf_password)
         if user_choice == '2':
-            got_any_exception = self.decrypt_multiple_pdfs_in_a_directory(pdf_location=pdf_location, pdf_password=pdf_password)
+            got_any_exception = self.decrypt_multiple_pdfs_in_a_directory(pdf_location=pdf_location,
+                                                                          pdf_password=pdf_password)
 
         if got_any_exception is None:
             print("Done Decrypting PDF(s)")
