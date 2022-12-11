@@ -68,8 +68,9 @@ class PasswordRemoverGUI:
         sg.theme("DarkTeal2")
         choice_box = [
             [sg.Text('Do you want to decrypt - ', justification='left')],
-            [sg.Radio(text='Only one PDF', group_id='type_dec', key='one_pdf', default=True),
-             sg.Radio(text='All PDF in a directory', group_id='type_dec', key='all_pdf')],
+            [sg.Radio(text='Only one PDF', group_id='type_dec', key='one_pdf', default=True)
+             # ,sg.Radio(text='All PDF in a directory', group_id='type_dec', key='all_pdf')
+            ],
             [sg.Button('NEXT'), sg.Button('CANCEL')]
         ]
 
@@ -99,7 +100,7 @@ class PasswordRemoverGUI:
         pdf_password = None
         remember_password = None
         if pdf_path:
-            pass_found, current_password = pw_action.password_exist_for_this_pdf(pdf_path=pdf_path)
+            pass_found, current_password = pw_action.password_exist_for_this_pdf_by_hash(pdf_path=pdf_path)
             if pass_found:
                 pdf_password = current_password
                 if not pr().validate_pdf_password(pdf_path=pdf_path, pdf_password=pdf_password):
@@ -111,7 +112,7 @@ class PasswordRemoverGUI:
                 pdf_password, remember_password = self.ask_for_password(additional_message="")
 
         if remember_password:
-            pw_action.save_password_for_this_pdf(pdf_path=pdf_path, password=pdf_password, pass_found=False)
+            pw_action.save_password_for_this_pdf_by_hash(pdf_path=pdf_path, password=pdf_password, pass_found=False)
         return pdf_password
 
     def choose_from_option(self):
