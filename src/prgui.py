@@ -105,28 +105,30 @@ class PasswordRemoverGUI:
                 pdf_password = current_password
                 if not pr().validate_pdf_password(pdf_path=pdf_path, pdf_password=pdf_password):
                     pdf_password, remember_password = self.ask_for_password(
-                        additional_message="Found an already used password for this PDF. "
+                        additional_message="\nFound an already used password for this PDF. "
                                            "Although the saved password is incorrect.\n"
                     )
             else:
                 pdf_password, remember_password = self.ask_for_password(additional_message="")
 
-        if remember_password:
-            pw_action.save_password_for_this_pdf_by_hash(pdf_path=pdf_path, password=pdf_password, pass_found=False)
-        return pdf_password
+        '''if remember_password:
+            pw_action.save_password_for_this_pdf_by_hash(pdf_path=pdf_path, password=pdf_password, pass_found=False)'''
+        return pdf_password, remember_password
 
     def choose_from_option(self):
         users_choice, pdf_path = self.get_the_pdf_path()
-        pdf_password = self.get_the_pdf_password(pdf_path=pdf_path)
-        return users_choice, pdf_path, pdf_password
+        pdf_password, remember_password = self.get_the_pdf_password(pdf_path=pdf_path)
+        return users_choice, pdf_path, pdf_password, remember_password
 
     def decrypt_pdf_gui(self):
-        user_choice, pdf_path, pdf_password = self.choose_from_option()
+        user_choice, pdf_path, pdf_password, remember_password = self.choose_from_option()
         # print(pdf_path, pdf_password)
         if pdf_path and pdf_password:
             pr_instance = pr()
             if pr_instance.decrypt_pdf_and_save_into_a_directory(user_choice=user_choice, pdf_location=pdf_path, pdf_password=pdf_password) is True :
                 sg.popup_auto_close("PDF decryption successful", auto_close_duration=5)
+                if remember_password:
+                    PasswordAction().save_password_for_this_pdf_by_hash(pdf_path=pdf_path, password=pdf_password, pass_found=False)
             else:
                 sg.popup_auto_close("All/Some PDF has some issues in decrypting.", auto_close_duration=5)
         else:

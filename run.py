@@ -14,8 +14,13 @@ class Runner:
                 file.write('{\n}')
             file.close()
 
+    def install_required_packages(self):
+        print("Installing required packages...")
+        os.system(Constants().install_req_cmd)
+
 
 if __name__ == "__main__":
-    Runner()
+    runner = Runner()
+    runner.install_required_packages()
     pr_instance = PasswordRemoverGUI()
     pr_instance.decrypt_pdf_gui()
