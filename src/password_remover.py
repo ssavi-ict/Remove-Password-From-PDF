@@ -54,8 +54,8 @@ class PasswordRemover:
             shutil.rmtree(decrypted_directory, ignore_errors=True)
         os.mkdir(decrypted_directory)
 
-        save_location = os.path.join(decrypted_directory, "decrypted_"+original_file_name)
-        return PasswordRemover.decrypt_pdf(pdf_location, pdf_password, save_location)
+        save_location = os.path.join(decrypted_directory, "decrypted_" + original_file_name)
+        return save_location, PasswordRemover.decrypt_pdf(pdf_location, pdf_password, save_location)
 
     def decrypt_multiple_pdfs_in_a_directory(self, pdf_location, pdf_password):
         decrypted_directory = os.path.join(pdf_location, 'decrypted')
@@ -78,9 +78,10 @@ class PasswordRemover:
         return any_exception
 
     def decrypt_pdf_and_save_into_a_directory(self, user_choice, pdf_location, pdf_password):
+        saved_location = None
         got_any_exception = None
         if user_choice == '1':
-            got_any_exception = self.decrypt_a_single_pdf(pdf_location=pdf_location, pdf_password=pdf_password)
+            saved_location, got_any_exception = self.decrypt_a_single_pdf(pdf_location=pdf_location, pdf_password=pdf_password)
         if user_choice == '2':
             got_any_exception = self.decrypt_multiple_pdfs_in_a_directory(pdf_location=pdf_location,
                                                                           pdf_password=pdf_password)
@@ -89,7 +90,7 @@ class PasswordRemover:
             print("Done Decrypting PDF(s)")
         else:
             print("There are some issues with decrypting PDF(s)")
-        return got_any_exception is None
+        return saved_location, got_any_exception is None
 
     def decrypt_my_pdf(self):
         user_choice = PasswordRemover.decision_from_user_about_directory()
