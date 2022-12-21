@@ -1,12 +1,12 @@
 import PySimpleGUI as sg
 from src.password_remover import PasswordRemover as pr
 from src.password import PasswordAction
+from src.pdf_viewer import PDFViewer as viewer
 
 
 class PasswordRemoverGUI:
-    def __int__(self):
-        # self.pw_action = PasswordAction()
-        pass
+    def __init__(self):
+        self.save_pdf_in_dir = False
 
     def select_a_pdf_file(self):
         sg.theme("DarkTeal2")
@@ -46,7 +46,7 @@ class PasswordRemoverGUI:
             [sg.Text('Password', size=(15, 1)), sg.InputText(key='-password-', password_char='*')],
             [sg.Checkbox('Remember Password ?',
                          key='save_pass', default=True,
-                         tooltip="By ticking on Remember Password, system will not ask you for password for this PDF in future.")
+                         tooltip="By ticking this, system will not ask you for password for this PDF in future.")
             ],
             [sg.Button('SUBMIT')]
         ]
@@ -71,6 +71,10 @@ class PasswordRemoverGUI:
             [sg.Radio(text='Only one PDF', group_id='type_dec', key='one_pdf', default=True)
              # ,sg.Radio(text='All PDF in a directory', group_id='type_dec', key='all_pdf')
             ],
+            [sg.Checkbox('Open in PDF Viewer?',
+                         key='view_pdf', default=False,
+                         tooltip="By ticking this, decrypted PDF will be launched in a PDF viewer.")
+            ],
             [sg.Button('NEXT'), sg.Button('CANCEL')]
         ]
 
@@ -93,6 +97,7 @@ class PasswordRemoverGUI:
             window.close()
         else:
             sg.popup_auto_close("CANCEL or [X] Button Clicked", auto_close_duration=5)
+        self.save_pdf_in_dir = values['view_pdf']
         return users_choice, pdf_path
 
     def get_the_pdf_password(self, pdf_path):
@@ -125,10 +130,13 @@ class PasswordRemoverGUI:
         # print(pdf_path, pdf_password)
         if pdf_path and pdf_password:
             pr_instance = pr()
-            if pr_instance.decrypt_pdf_and_save_into_a_directory(user_choice=user_choice, pdf_location=pdf_path, pdf_password=pdf_password) is True :
+            decrypted_path, status = pr().decrypt_pdf_and_save_into_a_directory(user_choice=user_choice, pdf_location=pdf_path, pdf_password=pdf_password)
+            if status is True :
                 sg.popup_auto_close("PDF decryption successful", auto_close_duration=5)
                 if remember_password:
                     PasswordAction().save_password_for_this_pdf_by_hash(pdf_path=pdf_path, password=pdf_password, pass_found=False)
+                if self.save_pdf_in_dir:
+                    viewer().show_specific_pdf(pdf_path=decrypted_path)
             else:
                 sg.popup_auto_close("All/Some PDF has some issues in decrypting.", auto_close_duration=5)
         else:
